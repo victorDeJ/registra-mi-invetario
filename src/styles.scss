@@ -1,0 +1,60 @@
+@use '@angular/material' as mat;
+
+html {
+  height: 100%;
+  @include mat.theme((
+    color: (
+      primary: mat.$azure-palette,
+      tertiary: mat.$blue-palette,
+    ),
+    typography: Inter,
+    density: 0,
+  ));
+}
+
+body {
+  color-scheme: light;
+  background-color: #f0f4f8;
+  color: var(--mat-sys-on-surface);
+  font-family: 'Inter', 'Roboto', sans-serif;
+  margin: 0;
+  height: 100%;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+// Smooth scrolling
+html {
+  scroll-behavior: smooth;
+}
+
+// Custom scrollbar
+::-webkit-scrollbar {
+  width: 6px;
+  height: 6px;
+}
+::-webkit-scrollbar-track {
+  background: #f1f1f1;
+}
+::-webkit-scrollbar-thumb {
+  background: #90caf9;
+  border-radius: 3px;
+}
+::-webkit-scrollbar-thumb:hover {
+  background: #1976D2;
+}
+
+// Material overrides
+.mat-mdc-dialog-container .mdc-dialog__surface {
+  border-radius: 12px !important;
+}
+
+// Snackbar styles
+.snack-success .mdc-snackbar__surface {
+  background: #2e7d32 !important;
+}
+.snack-error .mdc-snackbar__surface {
+  background: #c62828 !important;
+}
