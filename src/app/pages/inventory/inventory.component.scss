@@ -35,7 +35,7 @@ $desktop: 768px;
   padding: 0 20px !important;
   display: flex !important;
   justify-content: space-between !important;
-  align-items: center !important;
+  align-items: end !important;
   box-shadow: 0 4px 20px rgba(21, 101, 192, 0.45) !important;
   position: sticky;
   top: 0;
@@ -122,8 +122,8 @@ $desktop: 768px;
 
 @media (max-width: $mobile) {
   .main-toolbar {
-    height: 56px !important;
-    padding: 0 12px !important;
+    height: 80px !important;
+    padding: 0 12px 12px !important;
   }
   .app-title { font-size: 1rem !important; }
   .app-subtitle { display: none !important; }
