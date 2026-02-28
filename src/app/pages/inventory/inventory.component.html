@@ -31,6 +31,27 @@
         </mat-icon>
       </button>
 
+      <!-- Botón ordenar -->
+      <button
+        mat-icon-button
+        [matMenuTriggerFor]="sortMenu"
+        class="search-toggle-btn mobile-only"
+        matTooltip="Ordenar productos"
+      >
+        <mat-icon>sort</mat-icon>
+      </button>
+
+      <button
+        mat-button
+        [matMenuTriggerFor]="sortMenu"
+        class="search-toggle-btn desktop-only"
+        matTooltip="Ordenar productos"
+        style="padding: 0 16px"
+      >
+        <mat-icon>sort</mat-icon>
+        <span style="font-weight: 500; margin-left: 4px">Ordenar</span>
+      </button>
+
       <!-- Botón agregar desktop -->
       <button
         mat-raised-button
@@ -44,6 +65,45 @@
       </button>
     </div>
   </mat-toolbar>
+
+  <mat-menu #sortMenu="matMenu" xPosition="before">
+    <div
+      style="
+        padding: 8px 16px;
+        font-weight: 600;
+        color: #666;
+        font-size: 0.8rem;
+        text-transform: uppercase;
+      "
+    >
+      Ordenar por
+    </div>
+    <mat-divider></mat-divider>
+    <button mat-menu-item (click)="setSort('nombre')">
+      <mat-icon [style.opacity]="sortProperty() === 'nombre' ? '1' : '0'">
+        {{ sortOrder() === 'desc' ? 'arrow_downward' : 'arrow_upward' }}
+      </mat-icon>
+      <span>Nombre</span>
+    </button>
+    <button mat-menu-item (click)="setSort('idInterno')">
+      <mat-icon [style.opacity]="sortProperty() === 'idInterno' ? '1' : '0'">
+        {{ sortOrder() === 'desc' ? 'arrow_downward' : 'arrow_upward' }}
+      </mat-icon>
+      <span>ID Interno</span>
+    </button>
+    <button mat-menu-item (click)="setSort('precio')">
+      <mat-icon [style.opacity]="sortProperty() === 'precio' ? '1' : '0'">
+        {{ sortOrder() === 'desc' ? 'arrow_downward' : 'arrow_upward' }}
+      </mat-icon>
+      <span>Precio</span>
+    </button>
+    <button mat-menu-item (click)="setSort('costo')">
+      <mat-icon [style.opacity]="sortProperty() === 'costo' ? '1' : '0'">
+        {{ sortOrder() === 'desc' ? 'arrow_downward' : 'arrow_upward' }}
+      </mat-icon>
+      <span>Costo</span>
+    </button>
+  </mat-menu>
 
   <!-- ══════════════════════════════════════════ BARRA BÚSQUEDA EXPANDIBLE (MÓVIL) -->
   <div class="mobile-search-bar" [class.open]="searchOpen()" aria-label="Barra de búsqueda">

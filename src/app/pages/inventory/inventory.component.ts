@@ -65,6 +65,8 @@ export class InventoryComponent implements OnInit, OnDestroy {
   searchTerm = signal('');
   isMobile = signal(window.innerWidth < 768);
   searchOpen = signal(false);
+  sortProperty = signal<keyof Product | ''>('');
+  sortOrder = signal<'asc' | 'desc'>('asc');
 
   @HostListener('window:resize')
   onResize() {
@@ -72,16 +74,51 @@ export class InventoryComponent implements OnInit, OnDestroy {
     if (!this.isMobile()) this.searchOpen.set(false);
   }
 
+  setSort(property: keyof Product) {
+    if (this.sortProperty() === property) {
+      this.sortOrder.set(this.sortOrder() === 'asc' ? 'desc' : 'asc');
+    } else {
+      this.sortProperty.set(property);
+      this.sortOrder.set('asc');
+    }
+  }
+
   filteredProducts = computed(() => {
+    let result = this.products();
     const term = this.searchTerm().toLowerCase().trim();
-    if (!term) return this.products();
-    return this.products().filter(
-      (p) =>
-        p.nombre.toLowerCase().includes(term) ||
-        p.marca?.toLowerCase().includes(term) ||
-        p.descripcion?.toLowerCase().includes(term) ||
-        p.idInterno?.toString().includes(term)
-    );
+
+    if (term) {
+      result = result.filter(
+        (p) =>
+          p.nombre.toLowerCase().includes(term) ||
+          p.marca?.toLowerCase().includes(term) ||
+          p.descripcion?.toLowerCase().includes(term) ||
+          p.idInterno?.toString().includes(term)
+      );
+    }
+
+    const prop = this.sortProperty();
+    const order = this.sortOrder();
+
+    if (prop) {
+      result = [...result].sort((a, b) => {
+        let valA = a[prop];
+        let valB = b[prop];
+
+        if (valA === undefined || valA === null) valA = '';
+        if (valB === undefined || valB === null) valB = '';
+
+        if (typeof valA === 'string' && typeof valB === 'string') {
+          return order === 'asc' ? valA.localeCompare(valB) : valB.localeCompare(valA);
+        }
+
+        if (valA < valB) return order === 'asc' ? -1 : 1;
+        if (valA > valB) return order === 'asc' ? 1 : -1;
+        return 0;
+      });
+    }
+
+    return result;
   });
 
   displayedColumns: string[] = [
