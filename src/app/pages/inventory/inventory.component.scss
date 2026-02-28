@@ -335,6 +335,17 @@ $desktop: 768px;
     font-weight: 600 !important;
   }
 
+  .card-id-interno {
+    font-family: 'Courier New', monospace;
+    font-weight: 600;
+    color: #6c757d;
+    background: #f1f3f5;
+    padding: 2px 6px;
+    border-radius: 4px;
+    font-size: 0.75rem;
+    align-self: flex-start;
+  }
+
   .card-actions-inline {
     display: flex;
     align-items: center;
@@ -478,6 +489,16 @@ $desktop: 768px;
   font-size: 0.77rem !important;
   height: 24px !important;
   font-weight: 500 !important;
+}
+
+.id-interno {
+  font-family: 'Courier New', monospace;
+  font-weight: 600;
+  color: #6c757d;
+  background: #f1f3f5;
+  padding: 3px 6px;
+  border-radius: 6px;
+  font-size: 0.85rem;
 }
 
 .cost-cell  { color: #455a64 !important; font-family: 'Courier New', monospace; }

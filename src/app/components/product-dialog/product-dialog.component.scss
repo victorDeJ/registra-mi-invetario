@@ -1,0 +1,123 @@
+
+.dialog-container {
+  min-width: 360px;
+  display: flex;
+  flex-direction: column;
+}
+
+/* ── Header ── */
+.dialog-header {
+  display: flex;
+  align-items: end;
+  gap: 12px;
+  background: linear-gradient(135deg, #1565c0 0%, #1976d2 100%);
+  margin: -24px -24px 0 -24px;
+  padding: 35px 35px 12px 35px;
+  border-radius: 4px 4px 0 0;
+  flex-shrink: 0;
+}
+
+.header-spacer {
+  flex: 1;
+}
+
+.dialog-icon {
+  color: white;
+  font-size: 24px;
+  width: 24px;
+  height: 24px;
+  margin-left: 10px;
+  margin-top: 10px;
+}
+
+.close-btn {
+  color: rgba(255, 255, 255, 0.85) !important;
+  width: 36px !important;
+  height: 36px !important;
+  margin-right: 5px;
+  margin-top: 8px;
+}
+
+h2[mat-dialog-title] {
+  color: white;
+  margin: 0;
+  font-size: 1.1rem;
+  font-weight: 600;
+  padding: 0;
+}
+
+/* ── Form ── */
+mat-dialog-content {
+  padding-bottom: 4px !important;
+  overflow-y: auto;
+}
+
+.product-form {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  padding-top: 14px;
+}
+
+.full-width {
+  width: 100%;
+}
+
+.section-label {
+  font-size: 0.75rem;
+  font-weight: 600;
+  color: #888;
+  text-transform: uppercase;
+  letter-spacing: 0.8px;
+  margin: 6px 0 4px;
+}
+
+.price-row {
+  display: flex;
+  gap: 12px;
+}
+
+.half-width {
+  flex: 1;
+}
+
+/* ── Actions ── */
+.dialog-actions {
+  flex-shrink: 0;
+  display: flex !important;
+  justify-content: flex-end;
+  gap: 12px;
+  padding: 14px 24px 18px !important;
+  border-top: 1px solid #eee;
+}
+
+.cancel-btn {
+  color: #555;
+  border-color: #ccc !important;
+}
+
+.save-btn {
+  font-weight: 600;
+  flex: 1;
+}
+
+/* ── Mobile ── */
+@media (max-width: 480px) {
+  .dialog-container {
+    min-width: unset;
+    width: 100%;
+  }
+  .price-row {
+    flex-direction: column;
+    gap: 0;
+  }
+  .half-width {
+    width: 100%;
+  }
+  .save-btn {
+    min-width: 140px;
+  }
+  mat-dialog-content {
+    max-height: none;
+  }
+}

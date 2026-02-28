@@ -1,0 +1,120 @@
+
+    <div class="dialog-container">
+      <div class="dialog-header">
+        <mat-icon class="dialog-icon">
+          {{ data.mode === 'add' ? 'add_box' : 'edit' }}
+        </mat-icon>
+        <h2 mat-dialog-title>
+          {{ data.mode === 'add' ? 'Agregar Producto' : 'Editar Producto' }}
+        </h2>
+        <span class="header-spacer"></span>
+        <button mat-icon-button class="close-btn" (click)="onCancel()" aria-label="Cerrar">
+          <mat-icon>close</mat-icon>
+        </button>
+      </div>
+
+      <mat-dialog-content>
+        <form [formGroup]="form" class="product-form">
+          <mat-form-field appearance="outline" class="full-width">
+            <mat-label>ID Interno</mat-label>
+            <input
+              matInput
+              type="number"
+              formControlName="idInterno"
+              placeholder="Identificador numérico"
+              autocomplete="off"
+            />
+            <mat-icon matSuffix>tag</mat-icon>
+            <mat-error *ngIf="form.get('idInterno')?.hasError('pattern')">
+              Solo se permiten números
+            </mat-error>
+          </mat-form-field>
+
+          <mat-form-field appearance="outline" class="full-width">
+            <mat-label>Nombre *</mat-label>
+            <input
+              matInput
+              formControlName="nombre"
+              placeholder="Ej: Martillo de carpintero"
+              autocomplete="off"
+            />
+            <mat-icon matSuffix>inventory_2</mat-icon>
+            <mat-error *ngIf="form.get('nombre')?.hasError('required')">
+              El nombre es obligatorio
+            </mat-error>
+            <mat-error *ngIf="form.get('nombre')?.hasError('minlength')">
+              Mínimo 2 caracteres
+            </mat-error>
+          </mat-form-field>
+
+          <mat-form-field appearance="outline" class="full-width">
+            <mat-label>Descripción</mat-label>
+            <textarea
+              matInput
+              formControlName="descripcion"
+              rows="2"
+              placeholder="Descripción del producto (opcional)"
+            ></textarea>
+            <mat-icon matSuffix>description</mat-icon>
+          </mat-form-field>
+
+          <mat-form-field appearance="outline" class="full-width">
+            <mat-label>Marca</mat-label>
+            <input
+              matInput
+              formControlName="marca"
+              placeholder="Ej: Stanley, Black&Decker"
+              autocomplete="off"
+            />
+            <mat-icon matSuffix>label</mat-icon>
+          </mat-form-field>
+
+          <div class="section-label">Precios (opcionales)</div>
+
+          <div class="price-row">
+            <mat-form-field appearance="outline" class="half-width">
+              <mat-label>Costo</mat-label>
+              <input
+                matInput
+                type="number"
+                formControlName="costo"
+                placeholder="0.00"
+                min="0"
+                inputmode="decimal"
+              />
+              <span matTextPrefix>$&nbsp;</span>
+              <mat-error *ngIf="form.get('costo')?.hasError('min')">Valor inválido</mat-error>
+            </mat-form-field>
+
+            <mat-form-field appearance="outline" class="half-width">
+              <mat-label>Precio venta</mat-label>
+              <input
+                matInput
+                type="number"
+                formControlName="precio"
+                placeholder="0.00"
+                min="0"
+                inputmode="decimal"
+              />
+              <span matTextPrefix>$&nbsp;</span>
+              <mat-error *ngIf="form.get('precio')?.hasError('min')">Valor inválido</mat-error>
+            </mat-form-field>
+          </div>
+        </form>
+      </mat-dialog-content>
+
+      <mat-dialog-actions class="dialog-actions">
+        <button mat-stroked-button (click)="onCancel()" class="cancel-btn">Cancelar</button>
+        <button
+          mat-raised-button
+          color="primary"
+          (click)="onSave()"
+          [disabled]="form.invalid"
+          class="save-btn"
+        >
+          <mat-icon>{{ data.mode === 'add' ? 'add' : 'save' }}</mat-icon>
+          {{ data.mode === 'add' ? 'Agregar' : 'Guardar cambios' }}
+        </button>
+      </mat-dialog-actions>
+    </div>
+  

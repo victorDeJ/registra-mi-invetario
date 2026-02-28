@@ -12,21 +12,19 @@
     <div class="toolbar-right">
       <!-- Contador (solo desktop) -->
       @if(!loading()){
-        <span class="product-count desktop-only">
-          <mat-icon> inventory_2 </mat-icon>
-          {{ products().length }} producto {{ 
-            products().length !== 1 ? 's' : '' 
-          }}
-        </span>
+      <span class="product-count desktop-only">
+        <mat-icon> inventory_2 </mat-icon>
+        {{ products().length }} producto {{ products().length !== 1 ? 's' : '' }}
+      </span>
       }
 
       <!-- Botón buscar en móvil -->
-      <button mat-icon-button id="btn-toggle-search"
-      class="mobile-only search-toggle-btn"
-      (click)="toggleSearch()"
-      [matTooltip]="searchOpen() 
-        ? 'Cerrar búsqueda' 
-        : 'Buscar'"
+      <button
+        mat-icon-button
+        id="btn-toggle-search"
+        class="mobile-only search-toggle-btn"
+        (click)="toggleSearch()"
+        [matTooltip]="searchOpen() ? 'Cerrar búsqueda' : 'Buscar'"
       >
         <mat-icon>
           {{ searchOpen() ? 'close' : 'search' }}
@@ -34,10 +32,12 @@
       </button>
 
       <!-- Botón agregar desktop -->
-      <button mat-raised-button id="btn-add-product"
-      (click)="openAddDialog()"
-      class="add-btn desktop-only"
-      matTooltip="Agregar nuevo producto"
+      <button
+        mat-raised-button
+        id="btn-add-product"
+        (click)="openAddDialog()"
+        class="add-btn desktop-only"
+        matTooltip="Agregar nuevo producto"
       >
         <mat-icon> add </mat-icon>
         <span> Nuevo Producto </span>
@@ -46,31 +46,26 @@
   </mat-toolbar>
 
   <!-- ══════════════════════════════════════════ BARRA BÚSQUEDA EXPANDIBLE (MÓVIL) -->
-  <div class="mobile-search-bar" 
-  [class.open]="searchOpen()" 
-  aria-label="Barra de búsqueda"
-  >
-    <mat-form-field appearance="outline" 
-    class="search-field-mobile"
-    >
+  <div class="mobile-search-bar" [class.open]="searchOpen()" aria-label="Barra de búsqueda">
+    <mat-form-field appearance="outline" class="search-field-mobile">
       <mat-icon matPrefix> search </mat-icon>
-      <input matInput id="search-input-mobile"
-      [value]="searchTerm()"
-      (input)="onSearch($event)"
-      placeholder="Buscar por nombre, marca..."
+      <input
+        matInput
+        id="search-input-mobile"
+        [value]="searchTerm()"
+        (input)="onSearch($event)"
+        placeholder="Buscar por nombre, marca..."
       />
       @if( searchTerm() ){
-        <button mat-icon-button matSuffix (click)="clearSearch()">
-          <mat-icon>clear</mat-icon>
-        </button>
+      <button mat-icon-button matSuffix (click)="clearSearch()">
+        <mat-icon>clear</mat-icon>
+      </button>
       }
     </mat-form-field>
     @if( searchTerm() ){
-      <div class="mobile-search-info">
-        {{ filteredProducts().length }} resultado {{ 
-          filteredProducts().length !== 1 ? 's' : '' 
-        }}
-      </div>
+    <div class="mobile-search-info">
+      {{ filteredProducts().length }} resultado {{ filteredProducts().length !== 1 ? 's' : '' }}
+    </div>
     }
   </div>
 
@@ -113,306 +108,292 @@
 
   <!-- ══════════════════════════════════════════ LOADING -->
   @if(loading()){
-    <div class="loading-container">
-      <mat-spinner diameter="48"></mat-spinner>
-      <p> Cargando inventario... </p>
-    </div>
+  <div class="loading-container">
+    <mat-spinner diameter="48"></mat-spinner>
+    <p>Cargando inventario...</p>
+  </div>
   }
 
   <!-- ══════════════════════════════════════════ EMPTY STATE -->
   @if(!loading() && filteredProducts().length === 0){
-    <div class="empty-state">
-      <mat-icon class="empty-icon">
-        {{ 
-          searchTerm() 
-            ? 'search_off' 
-            : 'inventory_2' 
-        }}
-      </mat-icon>
-      <h3>
-        {{ 
-          searchTerm() 
-            ? 'Sin resultados' 
-            : '¡Empieza tu inventario!' 
-        }}
-      </h3>
-      <p>
-        {{
-          searchTerm()
-            ? 'No hay productos con "' + searchTerm() + '"'
-            : 'Agrega tu primer producto con el botón +'
-        }}
-      </p> 
-      @if( !searchTerm() ){
-        <button mat-raised-button
-        color="primary"
-        (click)="openAddDialog()"
-        class="empty-add-btn"
-        >
-          <mat-icon> add </mat-icon>
-          Agregar Producto
-        </button>
-      }
-      @if( searchTerm() ){
-        <button mat-stroked-button color="primary" 
-        (click)="clearSearch()"
-        >
-          <mat-icon> clear </mat-icon>
-          Limpiar búsqueda
-        </button>
-      }
-    </div>
+  <div class="empty-state">
+    <mat-icon class="empty-icon">
+      {{ searchTerm() ? 'search_off' : 'inventory_2' }}
+    </mat-icon>
+    <h3>
+      {{ searchTerm() ? 'Sin resultados' : '¡Empieza tu inventario!' }}
+    </h3>
+    <p>
+      {{
+        searchTerm()
+          ? 'No hay productos con "' + searchTerm() + '"'
+          : 'Agrega tu primer producto con el botón +'
+      }}
+    </p>
+    @if( !searchTerm() ){
+    <button mat-raised-button color="primary" (click)="openAddDialog()" class="empty-add-btn">
+      <mat-icon> add </mat-icon>
+      Agregar Producto
+    </button>
+    } @if( searchTerm() ){
+    <button mat-stroked-button color="primary" (click)="clearSearch()">
+      <mat-icon> clear </mat-icon>
+      Limpiar búsqueda
+    </button>
+    }
+  </div>
   }
 
   <!-- ══════════════════════════════════════════ VISTA TARJETAS (MÓVIL) -->
   @if( !loading() && filteredProducts().length > 0 ){
-    <div class="cards-container mobile-only">
-      <div class="card-list-header">
-        <span class="card-count">
-          <mat-icon>inventory_2</mat-icon>
-          {{ filteredProducts().length }} producto {{
-            filteredProducts().length !== 1 ? 's' : ''
-          }}
-        </span>
-      </div>
-  
-      @for( p of filteredProducts(); track p.id ){
-        <mat-card class="product-card" [attr.id]="'card-' + p.id">
-          <!-- Card Header -->
-          <mat-card-header class="card-header-custom">
-            <div class="card-title-row">
-              <div class="card-name-group">
-                <span class="card-product-name">
-                  {{ p.nombre }}
-                </span>
-                @if(p.marca){
-                  <mat-chip class="marca-chip-mobile">
-                    {{ p.marca }}
-                  </mat-chip>
-                }
-              </div>
-              <div class="card-actions-inline">
-                <button mat-icon-button
-                color="primary"
-                (click)="openEditDialog(p)"
-                [attr.id]="'btn-edit-' + p.id"
-                matTooltip="Editar"
-                >
-                  <mat-icon> edit </mat-icon>
-                </button>
-                <button
-                mat-icon-button
-                color="warn"
-                (click)="openDeleteDialog(p)"
-                [attr.id]="'btn-delete-' + p.id"
-                matTooltip="Eliminar"
-                >
-                  <mat-icon> delete_outline </mat-icon>
-                </button>
-              </div>
-            </div>
-            @if(p.descripcion){
-              <p class="card-description">
-                {{ p.descripcion }}
-              </p>
-            }
-          </mat-card-header>
-    
-          <!-- Card Pricing -->
-          <mat-card-content class="card-pricing">
-            <div class="price-item">
-              <span class="price-label">
-                <mat-icon> price_check </mat-icon>
-                Costo
-              </span>
-              <span class="price-value cost-value">
-                {{ formatCurrency(p.costo) }}
-              </span>
-            </div>
-            <mat-divider vertical class="price-divider"></mat-divider>
-            <div class="price-item">
-              <span class="price-label">
-                <mat-icon> sell </mat-icon>
-                Precio
-              </span>
-              <span class="price-value sale-value">
-                {{ formatCurrency(p.precio) }}
-              </span>
-            </div>
-            @if( calcMargen(p.costo, p.precio)  !== null ){ 
-              <mat-divider vertical
-              class="price-divider"
-              ></mat-divider>
+  <div class="cards-container mobile-only">
+    <div class="card-list-header">
+      <span class="card-count">
+        <mat-icon>inventory_2</mat-icon>
+        {{ filteredProducts().length }} producto {{ filteredProducts().length !== 1 ? 's' : '' }}
+      </span>
+    </div>
 
-              <div class="price-item">
-                <span class="price-label">
-                  <mat-icon> trending_up </mat-icon> Margen
-                </span>
-                <span class="price-value"
-                [ngClass]="{
+    @for( p of filteredProducts(); track p.id ){
+    <mat-card class="product-card" [attr.id]="'card-' + p.id">
+      <!-- Card Header -->
+      <mat-card-header class="card-header-custom">
+        <div class="card-title-row">
+          <div class="card-name-group">
+            <span class="card-product-name">
+              {{ p.nombre }}
+            </span>
+            @if(p.idInterno){
+            <span class="card-id-interno">#{{ p.idInterno }}</span>
+            } @if(p.marca){
+            <mat-chip class="marca-chip-mobile">
+              {{ p.marca }}
+            </mat-chip>
+            }
+          </div>
+          <div class="card-actions-inline">
+            <button
+              mat-icon-button
+              color="primary"
+              (click)="openEditDialog(p)"
+              [attr.id]="'btn-edit-' + p.id"
+              matTooltip="Editar"
+            >
+              <mat-icon> edit </mat-icon>
+            </button>
+            <button
+              mat-icon-button
+              color="warn"
+              (click)="openDeleteDialog(p)"
+              [attr.id]="'btn-delete-' + p.id"
+              matTooltip="Eliminar"
+            >
+              <mat-icon> delete_outline </mat-icon>
+            </button>
+          </div>
+        </div>
+        @if(p.descripcion){
+        <p class="card-description">
+          {{ p.descripcion }}
+        </p>
+        }
+      </mat-card-header>
+
+      <!-- Card Pricing -->
+      <mat-card-content class="card-pricing">
+        <div class="price-item">
+          <span class="price-label">
+            <mat-icon> price_check </mat-icon>
+            Costo
+          </span>
+          <span class="price-value cost-value">
+            {{ formatCurrency(p.costo) }}
+          </span>
+        </div>
+        <mat-divider vertical class="price-divider"></mat-divider>
+        <div class="price-item">
+          <span class="price-label">
+            <mat-icon> sell </mat-icon>
+            Precio
+          </span>
+          <span class="price-value sale-value">
+            {{ formatCurrency(p.precio) }}
+          </span>
+        </div>
+        @if( calcMargen(p.costo, p.precio) !== null ){
+        <mat-divider vertical class="price-divider"></mat-divider>
+
+        <div class="price-item">
+          <span class="price-label"> <mat-icon> trending_up </mat-icon> Margen </span>
+          <span
+            class="price-value"
+            [ngClass]="{
                   'margen-positive': calcMargen(p.costo, p.precio)! > 0,
                   'margen-negative': calcMargen(p.costo, p.precio)! <= 0,
                 }"
-                >
-                  {{ calcMargen(p.costo, p.precio) }}%
-                </span>
-              </div>
-            }
-          </mat-card-content>
-        </mat-card>
-      }
-    </div>
+          >
+            {{ calcMargen(p.costo, p.precio) }}%
+          </span>
+        </div>
+        }
+      </mat-card-content>
+    </mat-card>
+    }
+  </div>
   }
 
   <!-- ══════════════════════════════════════════ VISTA TABLA (DESKTOP) -->
   @if( !loading() && filteredProducts().length > 0 ){
-    <div class="table-container desktop-only">
-      <mat-card class="table-card">
-        <div class="table-responsive">
-          <table mat-table
+  <div class="table-container desktop-only">
+    <mat-card class="table-card">
+      <div class="table-responsive">
+        <table
+          mat-table
           [dataSource]="filteredProducts()"
           class="products-table"
           aria-label="Lista de productos"
-          >
-            <!-- Nombre -->
-            <ng-container matColumnDef="nombre">
-              <th mat-header-cell *matHeaderCellDef>
-                <mat-icon class="col-icon"> label </mat-icon> Nombre
-              </th>
-              <td mat-cell *matCellDef="let p" 
-              class="nombre-cell"
-              >
-                <div class="product-name">
-                  {{ p.nombre }}
-                </div>
-              </td>
-            </ng-container>
-  
-            <!-- Marca -->
-            <ng-container matColumnDef="marca">
-              <th mat-header-cell *matHeaderCellDef>
-                <mat-icon class="col-icon"> 
-                  branding_watermark 
-                </mat-icon> Marca
-              </th>
-              <td mat-cell *matCellDef="let p">
-                @if(p.marca){
-                  <mat-chip class="marca-chip">
-                    {{ p.marca }}
-                  </mat-chip>
-                }
-                @if(!p.marca){
-                  <span  class="no-data"> – </span>
-                }
-              </td>
-            </ng-container>
-  
-            <!-- Descripcion -->
-            <ng-container matColumnDef="descripcion">
-              <th mat-header-cell *matHeaderCellDef>
-                <mat-icon class="col-icon"> description </mat-icon> Descripción
-              </th>
-              <td mat-cell *matCellDef="let p" 
-              class="desc-cell"
-              >
-                <span [matTooltip]="p.descripcion || ''" [matTooltipDisabled]="!p.descripcion"
-                >
-                  {{
-                    p.descripcion
-                      ? p.descripcion.length > 50
-                        ? p.descripcion.slice(0, 50) + '…'
-                        : p.descripcion
-                      : '–'
-                  }}
-                </span>
-              </td>
-            </ng-container>
-  
-            <!-- Costo -->
-            <ng-container matColumnDef="costo">
-              <th mat-header-cell *matHeaderCellDef class="text-right">
-                <mat-icon class="col-icon">
-                  price_check
-                </mat-icon> Costo
-              </th>
-              <td mat-cell *matCellDef="let p" class="text-right cost-cell">
-                {{ formatCurrency(p.costo) }}
-              </td>
-            </ng-container>
-  
-            <!-- Precio -->
-            <ng-container matColumnDef="precio">
-              <th mat-header-cell *matHeaderCellDef class="text-right">
-                <mat-icon class="col-icon">
-                  sell
-                </mat-icon> Precio
-              </th>
-              <td mat-cell *matCellDef="let p" class="text-right price-cell">
-                {{ formatCurrency(p.precio) }}
-              </td>
-            </ng-container>
-  
-            <!-- Margen -->
-            <ng-container matColumnDef="margen">
-              <th mat-header-cell *matHeaderCellDef class="text-right">
-                <mat-icon class="col-icon">trending_up</mat-icon> Margen
-              </th>
-              <td mat-cell *matCellDef="let p" 
-              class="text-right margen-cell"
-              >
-                @if( calcMargen(p.costo, p.precio) !== null ){
-                  <span [ngClass]="{
+        >
+          <!-- ID Interno -->
+          <ng-container matColumnDef="idInterno">
+            <th mat-header-cell *matHeaderCellDef>
+              <mat-icon class="col-icon"> tag </mat-icon> ID
+            </th>
+            <td mat-cell *matCellDef="let p">
+              @if(p.idInterno){
+              <span class="id-interno">#{{ p.idInterno }}</span>
+              } @if(!p.idInterno){
+              <span class="no-data"> – </span>
+              }
+            </td>
+          </ng-container>
+          <!-- Nombre -->
+          <ng-container matColumnDef="nombre">
+            <th mat-header-cell *matHeaderCellDef>
+              <mat-icon class="col-icon"> label </mat-icon> Nombre
+            </th>
+            <td mat-cell *matCellDef="let p" class="nombre-cell">
+              <div class="product-name">
+                {{ p.nombre }}
+              </div>
+            </td>
+          </ng-container>
+
+          <!-- Marca -->
+          <ng-container matColumnDef="marca">
+            <th mat-header-cell *matHeaderCellDef>
+              <mat-icon class="col-icon"> branding_watermark </mat-icon> Marca
+            </th>
+            <td mat-cell *matCellDef="let p">
+              @if(p.marca){
+              <mat-chip class="marca-chip">
+                {{ p.marca }}
+              </mat-chip>
+              } @if(!p.marca){
+              <span class="no-data"> – </span>
+              }
+            </td>
+          </ng-container>
+
+          <!-- Descripcion -->
+          <ng-container matColumnDef="descripcion">
+            <th mat-header-cell *matHeaderCellDef>
+              <mat-icon class="col-icon"> description </mat-icon> Descripción
+            </th>
+            <td mat-cell *matCellDef="let p" class="desc-cell">
+              <span [matTooltip]="p.descripcion || ''" [matTooltipDisabled]="!p.descripcion">
+                {{
+                  p.descripcion
+                    ? p.descripcion.length > 50
+                      ? p.descripcion.slice(0, 50) + '…'
+                      : p.descripcion
+                    : '–'
+                }}
+              </span>
+            </td>
+          </ng-container>
+
+          <!-- Costo -->
+          <ng-container matColumnDef="costo">
+            <th mat-header-cell *matHeaderCellDef class="text-right">
+              <mat-icon class="col-icon"> price_check </mat-icon> Costo
+            </th>
+            <td mat-cell *matCellDef="let p" class="text-right cost-cell">
+              {{ formatCurrency(p.costo) }}
+            </td>
+          </ng-container>
+
+          <!-- Precio -->
+          <ng-container matColumnDef="precio">
+            <th mat-header-cell *matHeaderCellDef class="text-right">
+              <mat-icon class="col-icon"> sell </mat-icon> Precio
+            </th>
+            <td mat-cell *matCellDef="let p" class="text-right price-cell">
+              {{ formatCurrency(p.precio) }}
+            </td>
+          </ng-container>
+
+          <!-- Margen -->
+          <ng-container matColumnDef="margen">
+            <th mat-header-cell *matHeaderCellDef class="text-right">
+              <mat-icon class="col-icon">trending_up</mat-icon> Margen
+            </th>
+            <td mat-cell *matCellDef="let p" class="text-right margen-cell">
+              @if( calcMargen(p.costo, p.precio) !== null ){
+              <span
+                [ngClass]="{
                     'margen-positive': calcMargen(p.costo, p.precio)! > 0,
                     'margen-negative': calcMargen(p.costo, p.precio)! <= 0,
-                  }" >
-                    {{ calcMargen(p.costo, p.precio) }}%
-                  </span>
-                }
-                @else {
-                  <span class="no-data"> – </span>
-                }
-              </td>
-            </ng-container>
-  
-            <!-- Acciones -->
-            <ng-container matColumnDef="acciones">
-              <th mat-header-cell *matHeaderCellDef class="text-center">Acciones</th>
-              <td mat-cell *matCellDef="let p" class="text-center actions-cell">
-                <button
-                  mat-icon-button
-                  color="primary"
-                  (click)="openEditDialog(p)"
-                  [matTooltip]="'Editar ' + p.nombre"
-                  [attr.id]="'btn-edit-' + p.id"
-                >
-                  <mat-icon>edit</mat-icon>
-                </button>
-                <button
-                  mat-icon-button
-                  color="warn"
-                  (click)="openDeleteDialog(p)"
-                  [matTooltip]="'Eliminar ' + p.nombre"
-                  [attr.id]="'btn-delete-' + p.id"
-                >
-                  <mat-icon>delete</mat-icon>
-                </button>
-              </td>
-            </ng-container>
-  
-            <tr mat-header-row *matHeaderRowDef="displayedColumns; sticky: true"></tr>
-            <tr mat-row *matRowDef="let row; columns: displayedColumns" class="product-row"></tr>
-          </table>
-        </div>
-      </mat-card>
-    </div>
+                  }"
+              >
+                {{ calcMargen(p.costo, p.precio) }}%
+              </span>
+              } @else {
+              <span class="no-data"> – </span>
+              }
+            </td>
+          </ng-container>
+
+          <!-- Acciones -->
+          <ng-container matColumnDef="acciones">
+            <th mat-header-cell *matHeaderCellDef class="text-center">Acciones</th>
+            <td mat-cell *matCellDef="let p" class="text-center actions-cell">
+              <button
+                mat-icon-button
+                color="primary"
+                (click)="openEditDialog(p)"
+                [matTooltip]="'Editar ' + p.nombre"
+                [attr.id]="'btn-edit-' + p.id"
+              >
+                <mat-icon>edit</mat-icon>
+              </button>
+              <button
+                mat-icon-button
+                color="warn"
+                (click)="openDeleteDialog(p)"
+                [matTooltip]="'Eliminar ' + p.nombre"
+                [attr.id]="'btn-delete-' + p.id"
+              >
+                <mat-icon>delete</mat-icon>
+              </button>
+            </td>
+          </ng-container>
+
+          <tr mat-header-row *matHeaderRowDef="displayedColumns; sticky: true"></tr>
+          <tr mat-row *matRowDef="let row; columns: displayedColumns" class="product-row"></tr>
+        </table>
+      </div>
+    </mat-card>
+  </div>
   }
 
   <!-- ══════════════════════════════════════════ FAB MÓVIL -->
-  <button mat-fab id="btn-fab-add"
-  class="fab-add mobile-only"
-  (click)="openAddDialog()"
-  matTooltip="Agregar producto"
-  aria-label="Agregar producto"
+  <button
+    mat-fab
+    id="btn-fab-add"
+    class="fab-add mobile-only"
+    (click)="openAddDialog()"
+    matTooltip="Agregar producto"
+    aria-label="Agregar producto"
   >
     <mat-icon>add</mat-icon>
   </button>

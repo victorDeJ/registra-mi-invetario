@@ -27,8 +27,8 @@ import { MatDividerModule } from '@angular/material/divider';
 import { Subscription } from 'rxjs';
 import { ProductService } from '../../services/product.service';
 import { Product } from '../../models/product.model';
-import { ProductDialogComponent } from '../../components/product-dialog/product-dialog.component';
 import { ConfirmDialogComponent } from '../../components/confirm-dialog/confirm-dialog.component';
+import { ProductDialogComponent } from '../../components/product-dialog/product-dialog.component';
 
 @Component({
   selector: 'app-inventory',
@@ -79,11 +79,13 @@ export class InventoryComponent implements OnInit, OnDestroy {
       (p) =>
         p.nombre.toLowerCase().includes(term) ||
         p.marca?.toLowerCase().includes(term) ||
-        p.descripcion?.toLowerCase().includes(term),
+        p.descripcion?.toLowerCase().includes(term) ||
+        p.idInterno?.toString().includes(term)
     );
   });
 
   displayedColumns: string[] = [
+    'idInterno',
     'nombre',
     'marca',
     'descripcion',
@@ -140,7 +142,7 @@ export class InventoryComponent implements OnInit, OnDestroy {
       if (result) {
         try {
           await this.productService.addProduct(
-            result as Omit<Product, 'id' | 'createdAt' | 'updatedAt'>,
+            result as Omit<Product, 'id' | 'createdAt' | 'updatedAt'>
           );
           this.showSnack('✅ Producto agregado correctamente', 'success');
         } catch (e) {

@@ -1,0 +1,38 @@
+.confirm-container {
+  min-width: 320px;
+}
+
+.confirm-header {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  background: linear-gradient(135deg, #c62828, #e53935);
+  margin: -24px -24px 0 -24px;
+  padding: 18px 24px;
+  border-radius: 4px 4px 0 0;
+}
+
+.warn-icon {
+  color: white;
+  font-size: 26px;
+  width: 26px;
+  height: 26px;
+  margin-left: 10px;
+  margin-top: 10px;
+}
+
+h2[mat-dialog-title] {
+  color: white;
+  margin: 0;
+  font-size: 1.2rem;
+}
+
+mat-dialog-content p {
+  margin: 12px 0 0;
+  color: #333;
+}
+
+.warn-text {
+  color: #e53935;
+  font-size: 0.85rem;
+}
