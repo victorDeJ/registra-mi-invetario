@@ -44,6 +44,7 @@ export class ProductDialogComponent implements OnInit {
       nombre: [p?.nombre ?? '', [Validators.required, Validators.minLength(2)]],
       descripcion: [p?.descripcion ?? ''],
       marca: [p?.marca ?? ''],
+      cantidad: [p?.cantidad ?? null, [Validators.min(0)]],
       costo: [p?.costo ?? null, [Validators.min(0)]],
       precio: [p?.precio ?? null, [Validators.min(0)]],
     });
@@ -58,6 +59,8 @@ export class ProductDialogComponent implements OnInit {
         product.idInterno = Number(value.idInterno);
       if (value.descripcion) product.descripcion = value.descripcion;
       if (value.marca) product.marca = value.marca;
+      if (value.cantidad !== null && value.cantidad !== '')
+        product.cantidad = Number(value.cantidad);
       if (value.costo !== null && value.costo !== '') product.costo = Number(value.costo);
       if (value.precio !== null && value.precio !== '') product.precio = Number(value.precio);
       this.dialogRef.close(product);

@@ -126,6 +126,7 @@ export class InventoryComponent implements OnInit, OnDestroy {
     'nombre',
     'marca',
     'descripcion',
+    'cantidad',
     'costo',
     'precio',
     'margen',

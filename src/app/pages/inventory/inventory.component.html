@@ -89,7 +89,13 @@
       <mat-icon [style.opacity]="sortProperty() === 'idInterno' ? '1' : '0'">
         {{ sortOrder() === 'desc' ? 'arrow_downward' : 'arrow_upward' }}
       </mat-icon>
-      <span>ID Interno</span>
+      <span>Código</span>
+    </button>
+    <button mat-menu-item (click)="setSort('cantidad')">
+      <mat-icon [style.opacity]="sortProperty() === 'cantidad' ? '1' : '0'">
+        {{ sortOrder() === 'desc' ? 'arrow_downward' : 'arrow_upward' }}
+      </mat-icon>
+      <span>Cantidad</span>
     </button>
     <button mat-menu-item (click)="setSort('precio')">
       <mat-icon [style.opacity]="sortProperty() === 'precio' ? '1' : '0'">
@@ -263,6 +269,16 @@
       <mat-card-content class="card-pricing">
         <div class="price-item">
           <span class="price-label">
+            <mat-icon> inventory_2 </mat-icon>
+            Cant.
+          </span>
+          <span class="price-value">
+            {{ p.cantidad !== undefined && p.cantidad !== null ? p.cantidad : '–' }}
+          </span>
+        </div>
+        <mat-divider vertical class="price-divider"></mat-divider>
+        <div class="price-item">
+          <span class="price-label">
             <mat-icon> price_check </mat-icon>
             Costo
           </span>
@@ -313,10 +329,10 @@
           class="products-table"
           aria-label="Lista de productos"
         >
-          <!-- ID Interno -->
+          <!-- Código -->
           <ng-container matColumnDef="idInterno">
             <th mat-header-cell *matHeaderCellDef>
-              <mat-icon class="col-icon"> tag </mat-icon> ID
+              <mat-icon class="col-icon"> tag </mat-icon> Código
             </th>
             <td mat-cell *matCellDef="let p">
               @if(p.idInterno){
@@ -369,6 +385,16 @@
                     : '–'
                 }}
               </span>
+            </td>
+          </ng-container>
+
+          <!-- Cantidad -->
+          <ng-container matColumnDef="cantidad">
+            <th mat-header-cell *matHeaderCellDef class="text-right">
+              <mat-icon class="col-icon"> inventory_2 </mat-icon> Cant.
+            </th>
+            <td mat-cell *matCellDef="let p" class="text-right">
+              {{ p.cantidad !== undefined && p.cantidad !== null ? p.cantidad : '–' }}
             </td>
           </ng-container>
 
