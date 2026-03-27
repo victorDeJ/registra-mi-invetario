@@ -1,4 +1,5 @@
 <div class="inventory-page">
+<div class="inventory-page">
   <!-- ══════════════════════════════════════════════ TOOLBAR -->
   <mat-toolbar class="main-toolbar">
     <div class="toolbar-left">
@@ -9,14 +10,42 @@
       </div>
     </div>
 
+    <input
+      type="file"
+      #fileInput
+      style="display: none"
+      accept=".json"
+      (change)="onImportFile($event)"
+    />
+
     <div class="toolbar-right">
       <!-- Contador (solo desktop) -->
       @if(!loading()){
       <span class="product-count desktop-only">
         <mat-icon> inventory_2 </mat-icon>
-        {{ products().length }} producto {{ products().length !== 1 ? 's' : '' }}
+        {{ allProducts().length }} producto {{ allProducts().length !== 1 ? 's' : '' }}
       </span>
       }
+
+      <!-- <button
+        mat-icon-button
+        class="search-toggle-btn mobile-only"
+        (click)="fileInput.click()"
+        matTooltip="Importar JSON"
+      >
+        <mat-icon>upload</mat-icon>
+      </button> -->
+
+      <!-- Botón csv móvil -->
+
+      <!-- <button
+        mat-icon-button
+        class="search-toggle-btn mobile-only"
+        (click)="downloadCSV()"
+        matTooltip="Descargar CSV"
+      >
+        <mat-icon>download</mat-icon>
+      </button> -->
 
       <!-- Botón buscar en móvil -->
       <button
@@ -51,6 +80,28 @@
         <mat-icon>sort</mat-icon>
         <span style="font-weight: 500; margin-left: 4px">Ordenar</span>
       </button>
+
+      <!-- <button
+        mat-button
+        (click)="downloadCSV()"
+        class="search-toggle-btn desktop-only"
+        matTooltip="Descargar Inventario a CSV"
+        style="padding: 0 16px"
+      >
+        <mat-icon>download</mat-icon>
+        <span style="font-weight: 500; margin-left: 4px">Exportar CSV</span>
+      </button>
+
+      <button
+        mat-button
+        (click)="fileInput.click()"
+        class="search-toggle-btn desktop-only"
+        matTooltip="Importar Inventario desde JSON"
+        style="padding: 0 16px"
+      >
+        <mat-icon>upload</mat-icon>
+        <span style="font-weight: 500; margin-left: 4px">Importar JSON</span>
+      </button> -->
 
       <!-- Botón agregar desktop -->
       <button
@@ -130,47 +181,40 @@
     </mat-form-field>
     @if( searchTerm() ){
     <div class="mobile-search-info">
-      {{ filteredProducts().length }} resultado {{ filteredProducts().length !== 1 ? 's' : '' }}
+      {{ filteredAndSorted().length }} resultado {{ filteredAndSorted().length !== 1 ? 's' : '' }}
     </div>
     }
   </div>
 
   <!-- ══════════════════════════════════════════ BARRA BÚSQUEDA DESKTOP -->
-  <!-- <div class="search-section desktop-only">
-    <mat-form-field 
-    appearance="outline" 
-    class="search-field"
-    >
+  <div class="search-section desktop-only">
+    <mat-form-field appearance="outline" class="search-field">
       <mat-label> Buscar productos... </mat-label>
-      <mat-icon matPrefix> search</mat-icon>
-      <input matInput id="search-input"
-      [value]="searchTerm()"
-      (input)="onSearch($event)"
-      placeholder="Nombre, marca o descripción"
+      <mat-icon matPrefix> search </mat-icon>
+      <input
+        matInput
+        id="search-input"
+        [value]="searchTerm()"
+        (input)="onSearch($event)"
+        placeholder="Nombre, marca o descripción"
       />
-      
       @if(searchTerm()){
-        <button mat-icon-button matSuffix
-        (click)="clearSearch()"
-        matTooltip="Limpiar"
-        >
-          <mat-icon>clear</mat-icon>
-        </button>
+      <button mat-icon-button matSuffix (click)="clearSearch()" matTooltip="Limpiar">
+        <mat-icon>clear</mat-icon>
+      </button>
       }
     </mat-form-field>
 
     @if(searchTerm() && !loading()){
-      <div class="search-info" >
-        <mat-icon> filter_list </mat-icon>
-        <span>
-          {{ filteredProducts().length }} resultado {{
-            filteredProducts().length !== 1 ? 's' : ''
-          }}
-          para "{{ searchTerm() }}"
-        </span>
-      </div>
+    <div class="search-info">
+      <mat-icon> filter_list </mat-icon>
+      <span>
+        {{ filteredAndSorted().length }} resultado
+        {{ filteredAndSorted().length !== 1 ? 's' : '' }} para "{{ searchTerm() }}"
+      </span>
+    </div>
     }
-  </div> -->
+  </div>
 
   <!-- ══════════════════════════════════════════ LOADING -->
   @if(loading()){
@@ -181,7 +225,7 @@
   }
 
   <!-- ══════════════════════════════════════════ EMPTY STATE -->
-  @if(!loading() && filteredProducts().length === 0){
+  @if(!loading() && filteredAndSorted().length === 0){
   <div class="empty-state">
     <mat-icon class="empty-icon">
       {{ searchTerm() ? 'search_off' : 'inventory_2' }}
@@ -211,16 +255,16 @@
   }
 
   <!-- ══════════════════════════════════════════ VISTA TARJETAS (MÓVIL) -->
-  @if( !loading() && filteredProducts().length > 0 ){
+  @if( !loading() && filteredAndSorted().length > 0 ){
   <div class="cards-container mobile-only">
     <div class="card-list-header">
       <span class="card-count">
         <mat-icon>inventory_2</mat-icon>
-        {{ filteredProducts().length }} producto {{ filteredProducts().length !== 1 ? 's' : '' }}
+        {{ filteredAndSorted().length }} producto {{ filteredAndSorted().length !== 1 ? 's' : '' }}
       </span>
     </div>
 
-    @for( p of filteredProducts(); track p.id ){
+    @for( p of pagedProducts(); track p.id ){
     <mat-card class="product-card" [attr.id]="'card-' + p.id">
       <!-- Card Header -->
       <mat-card-header class="card-header-custom">
@@ -319,16 +363,55 @@
   }
 
   <!-- ══════════════════════════════════════════ VISTA TABLA (DESKTOP) -->
-  @if( !loading() && filteredProducts().length > 0 ){
+  @if( !loading() && filteredAndSorted().length > 0 ){
   <div class="table-container desktop-only">
     <mat-card class="table-card">
+      <!-- Barra de acciones de selección múltiple -->
+      @if(selection.selected.length > 0){
+      <div class="bulk-action-bar">
+        <span class="bulk-count">
+          <mat-icon>check_box</mat-icon>
+          {{ selection.selected.length }} producto{{
+            selection.selected.length !== 1 ? 's' : ''
+          }}
+          seleccionado{{ selection.selected.length !== 1 ? 's' : '' }}
+        </span>
+        <div class="bulk-actions">
+          <button mat-stroked-button (click)="selection.clear()">
+            <mat-icon>close</mat-icon> Deseleccionar
+          </button>
+          <button mat-flat-button color="warn" (click)="deleteSelected()" id="btn-delete-selected">
+            <mat-icon>delete_sweep</mat-icon> Eliminar selección
+          </button>
+        </div>
+      </div>
+      }
+
       <div class="table-responsive">
         <table
           mat-table
-          [dataSource]="filteredProducts()"
+          [dataSource]="pagedProducts()"
           class="products-table"
           aria-label="Lista de productos"
         >
+          <!-- Checkbox selección -->
+          <ng-container matColumnDef="select">
+            <th mat-header-cell *matHeaderCellDef class="select-col">
+              <mat-checkbox
+                [checked]="isAllSelected()"
+                [indeterminate]="selection.selected.length > 0 && !isAllSelected()"
+                (change)="toggleAllRows()"
+                aria-label="Seleccionar todos"
+              ></mat-checkbox>
+            </th>
+            <td mat-cell *matCellDef="let p" class="select-col">
+              <mat-checkbox
+                [checked]="selection.isSelected(p)"
+                (change)="selection.toggle(p)"
+                [attr.aria-label]="'Seleccionar ' + p.nombre"
+              ></mat-checkbox>
+            </td>
+          </ng-container>
           <!-- Código -->
           <ng-container matColumnDef="idInterno">
             <th mat-header-cell *matHeaderCellDef>
@@ -476,11 +559,28 @@
   <button
     mat-fab
     id="btn-fab-add"
-    class="fab-add mobile-only"
+    class="fab-add"
     (click)="openAddDialog()"
     matTooltip="Agregar producto"
     aria-label="Agregar producto"
+    style="margin-bottom: 14px"
   >
     <mat-icon>add</mat-icon>
   </button>
+
+  <!-- Paginación de Angular Material -->
+  @if(!loading() && allProducts().length > 0){
+  <mat-card class="paginator-card">
+    <mat-paginator
+      [length]="filteredAndSorted().length"
+      [pageSize]="pageSize"
+      [pageSizeOptions]="[25, 50, 100, 500]"
+      [pageIndex]="currentPage()"
+      (page)="onPageChange($event)"
+      showFirstLastButtons
+      aria-label="Seleccionar página"
+    >
+    </mat-paginator>
+  </mat-card>
+  }
 </div>

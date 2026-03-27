@@ -1,12 +1,17 @@
 {
   "name": "registra-mi-inventario",
   "version": "0.0.0",
+  "main": "electron-main.js",
   "scripts": {
     "ng": "ng",
     "start": "ng serve",
     "build": "ng build",
     "watch": "ng build --watch --configuration development",
-    "test": "ng test"
+    "test": "ng test",
+    "preinstall": "node preinstall.js",
+    "electron:start": "ng build --base-href ./ && electron .",
+    "electron:dev": "electron .",
+    "electron:pkg": "ng build --base-href ./ && electron-builder"
   },
   "prettier": {
     "printWidth": 100,
@@ -23,16 +28,16 @@
   "private": true,
   "packageManager": "npm@11.7.0",
   "dependencies": {
+    "@angular/animations": "21.1.0",
     "@angular/cdk": "21.1.0",
     "@angular/common": "21.1.0",
     "@angular/compiler": "21.1.0",
     "@angular/core": "21.1.0",
+    "@angular/fire": "19.2.0",
     "@angular/forms": "21.1.0",
+    "@angular/material": "21.1.0",
     "@angular/platform-browser": "21.1.0",
     "@angular/router": "21.1.0",
-    "@angular/animations": "21.1.0",
-    "@angular/fire": "19.2.0",
-    "@angular/material": "21.1.0",
     "@capacitor/android": "6.2.1",
     "@capacitor/core": "6.2.1",
     "firebase": "10.14.1",
@@ -43,12 +48,29 @@
     "@angular/build": "21.1.0",
     "@angular/cli": "21.1.0",
     "@angular/compiler-cli": "21.1.0",
+    "@angular/material": "21.1.0",
     "@capacitor/assets": "3.0.4",
     "@capacitor/cli": "6.2.1",
+    "electron": "^41.0.3",
+    "electron-builder": "^26.8.1",
     "jsdom": "27.1.0",
     "typescript": "5.9.2",
-    "vitest": "4.0.8",
-    "@angular/material": "21.1.0"
-
+    "vitest": "4.0.8"
+  },
+  "build": {
+    "appId": "com.victorde-j.registra-mi-inventario",
+    "productName": "Registra Mi Inventario",
+    "directories": {
+      "output": "executables"
+    },
+    "win": {
+      "target": "nsis",
+      "icon": "public/favicon.ico"
+    },
+    "files": [
+      "dist/registra-mi-inventario/browser/**/*",
+      "electron-main.js",
+      "package.json"
+    ]
   }
 }

@@ -1,4 +1,5 @@
 <div class="dialog-container">
+<div class="dialog-container">
   <div class="dialog-header">
     <mat-icon class="dialog-icon">
       {{ data.mode === 'add' ? 'add_box' : 'edit' }}
@@ -13,7 +14,7 @@
   </div>
 
   <mat-dialog-content>
-    <form [formGroup]="form" class="product-form">
+    <form [formGroup]="form" class="product-form" (ngSubmit)="onSave()">
       <mat-form-field appearance="outline" class="full-width">
         <mat-label>Código</mat-label>
         <input
@@ -105,6 +106,9 @@
           <mat-error *ngIf="form.get('precio')?.hasError('min')">Valor inválido</mat-error>
         </mat-form-field>
       </div>
+
+      <!-- Hidden submit button to enable native enter key submission -->
+      <button type="submit" style="display: none" [disabled]="form.invalid"></button>
     </form>
   </mat-dialog-content>
 

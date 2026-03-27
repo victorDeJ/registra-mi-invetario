@@ -1,12 +1,4 @@
-import {
-  Component,
-  OnInit,
-  OnDestroy,
-  inject,
-  signal,
-  computed,
-  HostListener,
-} from '@angular/core';
+import { Component, computed, HostListener, inject, OnInit, signal } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { MatToolbarModule } from '@angular/material/toolbar';
@@ -24,7 +16,9 @@ import { MatTooltipModule } from '@angular/material/tooltip';
 import { MatBadgeModule } from '@angular/material/badge';
 import { MatMenuModule } from '@angular/material/menu';
 import { MatDividerModule } from '@angular/material/divider';
-import { Subscription } from 'rxjs';
+import { MatPaginatorModule, PageEvent } from '@angular/material/paginator';
+import { MatCheckboxModule } from '@angular/material/checkbox';
+import { SelectionModel } from '@angular/cdk/collections';
 import { ProductService } from '../../services/product.service';
 import { Product } from '../../models/product.model';
 import { ConfirmDialogComponent } from '../../components/confirm-dialog/confirm-dialog.component';
@@ -51,40 +45,44 @@ import { ProductDialogComponent } from '../../components/product-dialog/product-
     MatBadgeModule,
     MatMenuModule,
     MatDividerModule,
+    MatPaginatorModule,
+    MatCheckboxModule,
   ],
   templateUrl: './inventory.component.html',
   styleUrls: ['./inventory.component.scss'],
 })
-export class InventoryComponent implements OnInit, OnDestroy {
+export class InventoryComponent implements OnInit {
+  protected Math = Math;
   private productService = inject(ProductService);
   private dialog = inject(MatDialog);
   private snackBar = inject(MatSnackBar);
 
-  products = signal<Product[]>([]);
+  // ── Estado general ──────────────────────────────────────────────────────────
   loading = signal(true);
-  searchTerm = signal('');
   isMobile = signal(window.innerWidth < 768);
   searchOpen = signal(false);
-  sortProperty = signal<keyof Product | ''>('');
+  backups = signal<any[]>([]);
+
+  // ── Datos en memoria ─────────────────────────────────────────────────────────
+  /** Todos los productos descargados de Firestore (una sola vez). */
+  allProducts = signal<Product[]>([]);
+
+  // ── Búsqueda ─────────────────────────────────────────────────────────────────
+  searchTerm = signal('');
+
+  // ── Ordenamiento (en memoria, sin consultas extra) ───────────────────────────
+  sortProperty = signal<keyof Product>('nombre' as keyof Product);
   sortOrder = signal<'asc' | 'desc'>('asc');
 
-  @HostListener('window:resize')
-  onResize() {
-    this.isMobile.set(window.innerWidth < 768);
-    if (!this.isMobile()) this.searchOpen.set(false);
-  }
+  // ── Paginación (en memoria) ──────────────────────────────────────────────────
+  currentPage = signal(0); // pageIndex base 0 para mat-paginator
+  pageSize = 100;
 
-  setSort(property: keyof Product) {
-    if (this.sortProperty() === property) {
-      this.sortOrder.set(this.sortOrder() === 'asc' ? 'desc' : 'asc');
-    } else {
-      this.sortProperty.set(property);
-      this.sortOrder.set('asc');
-    }
-  }
+  // ── Computed ─────────────────────────────────────────────────────────────────
 
-  filteredProducts = computed(() => {
-    let result = this.products();
+  /** Filtra y ordena en memoria según búsqueda y criterio de orden actual. */
+  filteredAndSorted = computed(() => {
+    let result = this.allProducts();
     const term = this.searchTerm().toLowerCase().trim();
 
     if (term) {
@@ -97,31 +95,32 @@ export class InventoryComponent implements OnInit, OnDestroy {
       );
     }
 
+    // Ordenamiento local
     const prop = this.sortProperty();
-    const order = this.sortOrder();
-
-    if (prop) {
-      result = [...result].sort((a, b) => {
-        let valA = a[prop];
-        let valB = b[prop];
-
-        if (valA === undefined || valA === null) valA = '';
-        if (valB === undefined || valB === null) valB = '';
-
-        if (typeof valA === 'string' && typeof valB === 'string') {
-          return order === 'asc' ? valA.localeCompare(valB) : valB.localeCompare(valA);
-        }
-
-        if (valA < valB) return order === 'asc' ? -1 : 1;
-        if (valA > valB) return order === 'asc' ? 1 : -1;
-        return 0;
-      });
-    }
+    const dir = this.sortOrder();
+    result = [...result].sort((a, b) => {
+      const valA = (a as any)[prop] ?? '';
+      const valB = (b as any)[prop] ?? '';
+      if (typeof valA === 'string') {
+        return dir === 'asc' ? valA.localeCompare(valB, 'es') : valB.localeCompare(valA, 'es');
+      }
+      return dir === 'asc' ? valA - valB : valB - valA;
+    });
 
     return result;
   });
 
+  /** Corta la lista para mostrar solo la página actual (máx. 100 en pantalla). */
+  pagedProducts = computed(() => {
+    const start = this.currentPage() * this.pageSize;
+    return this.filteredAndSorted().slice(start, start + this.pageSize);
+  });
+
+  // ── Selección múltiple ────────────────────────────────────────────────────
+  selection = new SelectionModel<Product>(true, []);
+
   displayedColumns: string[] = [
+    'select',
     'idInterno',
     'nombre',
     'marca',
@@ -133,25 +132,115 @@ export class InventoryComponent implements OnInit, OnDestroy {
     'acciones',
   ];
 
-  private sub: Subscription | null = null;
+  // ── Ciclo de vida ────────────────────────────────────────────────────────────
 
-  ngOnInit(): void {
-    this.sub = this.productService.getProducts().subscribe({
-      next: (products) => {
-        this.products.set(products);
-        this.loading.set(false);
-      },
-      error: (err) => {
-        console.error(err);
-        this.loading.set(false);
-        this.showSnack('Error al cargar productos', 'error');
-      },
+  async ngOnInit() {
+    await this.loadAllProducts();
+    this.productService.getBackupRegistry().subscribe({
+      next: (b) => this.backups.set(b),
+      error: (e) => console.error('[InventoryComponent] Backup registry:', e),
     });
   }
 
-  ngOnDestroy(): void {
-    this.sub?.unsubscribe();
+  @HostListener('window:resize')
+  onResize() {
+    this.isMobile.set(window.innerWidth < 768);
+    if (!this.isMobile()) this.searchOpen.set(false);
   }
+
+  // ── Selección Múltiple ───────────────────────────────────────────────────────
+
+  isAllSelected(): boolean {
+    return (
+      this.selection.selected.length === this.pagedProducts().length &&
+      this.pagedProducts().length > 0
+    );
+  }
+
+  toggleAllRows(): void {
+    if (this.isAllSelected()) {
+      this.selection.clear();
+    } else {
+      this.pagedProducts().forEach((p) => this.selection.select(p));
+    }
+  }
+
+  async deleteSelected(): Promise<void> {
+    const count = this.selection.selected.length;
+    if (count === 0) return;
+
+    const confirmed = confirm(
+      `¿Estás seguro de eliminar los ${count} productos seleccionados? Esta acción no se puede deshacer.`
+    );
+    if (!confirmed) return;
+
+    this.loading.set(true);
+    let errorCount = 0;
+    const idsToDelete = this.selection.selected.map((p) => p.id!);
+
+    for (const id of idsToDelete) {
+      if (!id) continue;
+      try {
+        await this.productService.deleteProduct(id);
+      } catch (err) {
+        console.error(err);
+        errorCount++;
+      }
+    }
+
+    // Actualizar cache local omitiendo los borrados
+    this.allProducts.update((prev) => prev.filter((p) => !idsToDelete.includes(p.id!)));
+    this.selection.clear();
+    this.loading.set(false);
+
+    if (errorCount === 0) {
+      this.showSnack(`✅ ${count} productos eliminados`, 'success');
+    } else {
+      this.showSnack(
+        `⚠️ Se eliminaron ${count - errorCount} productos. ${errorCount} fallaron.`,
+        'error'
+      );
+    }
+  }
+
+  // ── Carga de datos ───────────────────────────────────────────────────────────
+
+  async loadAllProducts(restorePage = false) {
+    this.loading.set(true);
+    const savedPage = this.currentPage();
+    try {
+      const all = await this.productService.getAllProducts();
+      this.allProducts.set(all);
+      this.currentPage.set(restorePage ? savedPage : 0);
+    } catch (err) {
+      console.error(err);
+      this.showSnack('Error al cargar productos', 'error');
+    } finally {
+      this.loading.set(false);
+    }
+  }
+
+  // ── Ordenamiento ─────────────────────────────────────────────────────────────
+
+  setSort(property: keyof Product) {
+    if (this.sortProperty() === property) {
+      this.sortOrder.set(this.sortOrder() === 'asc' ? 'desc' : 'asc');
+    } else {
+      this.sortProperty.set(property);
+      this.sortOrder.set('asc');
+    }
+    this.currentPage.set(0); // volver a la primera página al cambiar orden
+  }
+
+  // ── Paginación ───────────────────────────────────────────────────────────────
+
+  onPageChange(event: PageEvent) {
+    this.pageSize = event.pageSize;
+    this.currentPage.set(event.pageIndex);
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+  }
+
+  // ── Búsqueda ─────────────────────────────────────────────────────────────────
 
   toggleSearch(): void {
     this.searchOpen.set(!this.searchOpen());
@@ -160,11 +249,15 @@ export class InventoryComponent implements OnInit, OnDestroy {
 
   onSearch(event: Event): void {
     this.searchTerm.set((event.target as HTMLInputElement).value);
+    this.currentPage.set(0); // volver a la primera página al buscar
   }
 
   clearSearch(): void {
     this.searchTerm.set('');
+    this.currentPage.set(0);
   }
+
+  // ── Diálogos CRUD ────────────────────────────────────────────────────────────
 
   openAddDialog(): void {
     const isMob = this.isMobile();
@@ -182,6 +275,7 @@ export class InventoryComponent implements OnInit, OnDestroy {
           await this.productService.addProduct(
             result as Omit<Product, 'id' | 'createdAt' | 'updatedAt'>
           );
+          await this.loadAllProducts(true); // preservar página actual
           this.showSnack('✅ Producto agregado correctamente', 'success');
         } catch (e) {
           this.showSnack('❌ Error al agregar producto', 'error');
@@ -204,6 +298,10 @@ export class InventoryComponent implements OnInit, OnDestroy {
       if (result && product.id) {
         try {
           await this.productService.updateProduct(product.id, result);
+          // Actualizar solo ese producto en memoria para evitar recargar todo
+          this.allProducts.update((prev) =>
+            prev.map((p) => (p.id === product.id ? { ...p, ...result } : p))
+          );
           this.showSnack('✅ Producto actualizado correctamente', 'success');
         } catch (e) {
           this.showSnack('❌ Error al actualizar producto', 'error');
@@ -221,6 +319,8 @@ export class InventoryComponent implements OnInit, OnDestroy {
       if (confirmed && product.id) {
         try {
           await this.productService.deleteProduct(product.id);
+          // Quitar de memoria sin recargar todo
+          this.allProducts.update((prev) => prev.filter((p) => p.id !== product.id));
           this.showSnack('🗑️ Producto eliminado', 'success');
         } catch (e) {
           this.showSnack('❌ Error al eliminar producto', 'error');
@@ -228,6 +328,8 @@ export class InventoryComponent implements OnInit, OnDestroy {
       }
     });
   }
+
+  // ── Utilidades ───────────────────────────────────────────────────────────────
 
   calcMargen(costo?: number, precio?: number): number | null {
     if (costo && precio && costo > 0) {
@@ -239,6 +341,84 @@ export class InventoryComponent implements OnInit, OnDestroy {
   formatCurrency(value?: number): string {
     if (value === undefined || value === null) return '-';
     return new Intl.NumberFormat('es-VE', { style: 'currency', currency: 'USD' }).format(value);
+  }
+
+  downloadCSV(): void {
+    const data = [...this.filteredAndSorted()];
+    if (!data.length) {
+      this.showSnack('No hay datos para exportar', 'error');
+      return;
+    }
+
+    const headers = ['idInterno', 'nombre', 'descripcion', 'marca', 'cantidad', 'costo', 'precio'];
+    let csvContent = headers.join(',') + '\r\n';
+
+    data.forEach((p) => {
+      const row = headers.map((header) => {
+        let val = (p as any)[header];
+        if (val === null || val === undefined) val = '';
+        let valStr = String(val);
+        if (valStr.includes(',') || valStr.includes('"') || valStr.includes('\n')) {
+          valStr = '"' + valStr.replace(/"/g, '""') + '"';
+        }
+        return valStr;
+      });
+      csvContent += row.join(',') + '\r\n';
+    });
+
+    const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+    const url = URL.createObjectURL(blob);
+    const link = document.createElement('a');
+    link.href = url;
+    link.setAttribute('download', `inventario_${new Date().toISOString().split('T')[0]}.csv`);
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+    this.showSnack('Descarga iniciada', 'success');
+  }
+
+  async onImportFile(event: any): Promise<void> {
+    const file = event.target.files[0];
+    if (!file) return;
+
+    if (!file.name.endsWith('.json')) {
+      this.showSnack('❌ Por favor selecciona un archivo JSON', 'error');
+      return;
+    }
+
+    const reader = new FileReader();
+    reader.onload = async (e: any) => {
+      try {
+        const content = e.target.result;
+        const products = JSON.parse(content);
+
+        if (!Array.isArray(products)) {
+          this.showSnack('❌ El formato del JSON debe ser un array', 'error');
+          return;
+        }
+
+        this.loading.set(true);
+        this.showSnack('📦 Respaldando, limpiando e importando datos...', 'success');
+
+        const backupName = await this.productService.backupCollection();
+        await this.productService.clearCollection();
+        await this.productService.importProducts(products);
+
+        this.showSnack(`✅ Importación completada. Respaldo: ${backupName}`, 'success');
+        await this.loadAllProducts();
+      } catch (err) {
+        console.error('[InventoryComponent] Error al importar:', err);
+        this.showSnack('❌ Error al procesar el archivo o subir a base de datos', 'error');
+      } finally {
+        this.loading.set(false);
+        event.target.value = '';
+      }
+    };
+    reader.onerror = () => {
+      this.showSnack('❌ Error al leer el archivo', 'error');
+      this.loading.set(false);
+    };
+    reader.readAsText(file);
   }
 
   private showSnack(message: string, type: 'success' | 'error'): void {
