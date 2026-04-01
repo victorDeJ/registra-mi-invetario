@@ -5,7 +5,7 @@
     <div class="toolbar-left">
       <mat-icon class="toolbar-logo"> hardware </mat-icon>
       <div class="toolbar-title">
-        <span class="app-title"> Registra mi Inventario </span>
+        <span class="app-title"> Inventario </span>
         <span class="app-subtitle"> Ferretería </span>
       </div>
     </div>
@@ -58,6 +58,30 @@
         <mat-icon>
           {{ searchOpen() ? 'close' : 'search' }}
         </mat-icon>
+      </button>
+
+      <!-- Botón totales móvil -->
+      <button
+        mat-icon-button
+        id="btn-totals-mobile"
+        class="search-toggle-btn mobile-only"
+        (click)="openTotalsDialog()"
+        matTooltip="Ver totales"
+      >
+        <mat-icon>assessment</mat-icon>
+      </button>
+
+      <!-- Botón totales desktop -->
+      <button
+        mat-button
+        id="btn-totals-desktop"
+        (click)="openTotalsDialog()"
+        class="search-toggle-btn desktop-only"
+        matTooltip="Ver totalizaciones del inventario"
+        style="padding: 0 16px"
+      >
+        <mat-icon>assessment</mat-icon>
+        <span style="font-weight: 500; margin-left: 4px">Totales</span>
       </button>
 
       <!-- Botón ordenar -->
@@ -131,34 +155,44 @@
     </div>
     <mat-divider></mat-divider>
     <button mat-menu-item (click)="setSort('nombre')">
-      <mat-icon [style.opacity]="sortProperty() === 'nombre' ? '1' : '0'">
-        {{ sortOrder() === 'desc' ? 'arrow_downward' : 'arrow_upward' }}
+      <mat-icon>
+        @if(sortProperty() !== 'nombre' || sortOrder() === 'none') { remove_circle_outline }
+        @else if(sortOrder() === 'asc') { arrow_upward }
+        @else { arrow_downward }
       </mat-icon>
-      <span>Nombre</span>
+      <span [style.fontWeight]="sortProperty() === 'nombre' && sortOrder() !== 'none' ? '700' : 'normal'">Nombre</span>
     </button>
     <button mat-menu-item (click)="setSort('idInterno')">
-      <mat-icon [style.opacity]="sortProperty() === 'idInterno' ? '1' : '0'">
-        {{ sortOrder() === 'desc' ? 'arrow_downward' : 'arrow_upward' }}
+      <mat-icon>
+        @if(sortProperty() !== 'idInterno' || sortOrder() === 'none') { remove_circle_outline }
+        @else if(sortOrder() === 'asc') { arrow_upward }
+        @else { arrow_downward }
       </mat-icon>
-      <span>Código</span>
+      <span [style.fontWeight]="sortProperty() === 'idInterno' && sortOrder() !== 'none' ? '700' : 'normal'">Código</span>
     </button>
     <button mat-menu-item (click)="setSort('cantidad')">
-      <mat-icon [style.opacity]="sortProperty() === 'cantidad' ? '1' : '0'">
-        {{ sortOrder() === 'desc' ? 'arrow_downward' : 'arrow_upward' }}
+      <mat-icon>
+        @if(sortProperty() !== 'cantidad' || sortOrder() === 'none') { remove_circle_outline }
+        @else if(sortOrder() === 'asc') { arrow_upward }
+        @else { arrow_downward }
       </mat-icon>
-      <span>Cantidad</span>
+      <span [style.fontWeight]="sortProperty() === 'cantidad' && sortOrder() !== 'none' ? '700' : 'normal'">Cantidad</span>
     </button>
     <button mat-menu-item (click)="setSort('precio')">
-      <mat-icon [style.opacity]="sortProperty() === 'precio' ? '1' : '0'">
-        {{ sortOrder() === 'desc' ? 'arrow_downward' : 'arrow_upward' }}
+      <mat-icon>
+        @if(sortProperty() !== 'precio' || sortOrder() === 'none') { remove_circle_outline }
+        @else if(sortOrder() === 'asc') { arrow_upward }
+        @else { arrow_downward }
       </mat-icon>
-      <span>Precio</span>
+      <span [style.fontWeight]="sortProperty() === 'precio' && sortOrder() !== 'none' ? '700' : 'normal'">Precio</span>
     </button>
     <button mat-menu-item (click)="setSort('costo')">
-      <mat-icon [style.opacity]="sortProperty() === 'costo' ? '1' : '0'">
-        {{ sortOrder() === 'desc' ? 'arrow_downward' : 'arrow_upward' }}
+      <mat-icon>
+        @if(sortProperty() !== 'costo' || sortOrder() === 'none') { remove_circle_outline }
+        @else if(sortOrder() === 'asc') { arrow_upward }
+        @else { arrow_downward }
       </mat-icon>
-      <span>Costo</span>
+      <span [style.fontWeight]="sortProperty() === 'costo' && sortOrder() !== 'none' ? '700' : 'normal'">Costo</span>
     </button>
   </mat-menu>
 

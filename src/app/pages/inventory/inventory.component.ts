@@ -23,6 +23,7 @@ import { ProductService } from '../../services/product.service';
 import { Product } from '../../models/product.model';
 import { ConfirmDialogComponent } from '../../components/confirm-dialog/confirm-dialog.component';
 import { ProductDialogComponent } from '../../components/product-dialog/product-dialog.component';
+import { TotalsDialogComponent } from '../../components/totals-dialog/totals-dialog.component';
 
 @Component({
   selector: 'app-inventory',
@@ -72,7 +73,7 @@ export class InventoryComponent implements OnInit {
 
   // ── Ordenamiento (en memoria, sin consultas extra) ───────────────────────────
   sortProperty = signal<keyof Product>('nombre' as keyof Product);
-  sortOrder = signal<'asc' | 'desc'>('asc');
+  sortOrder = signal<'asc' | 'desc' | 'none'>('none');
 
   // ── Paginación (en memoria) ──────────────────────────────────────────────────
   currentPage = signal(0); // pageIndex base 0 para mat-paginator
@@ -95,17 +96,30 @@ export class InventoryComponent implements OnInit {
       );
     }
 
-    // Ordenamiento local
+    // Ordenamiento local (none = sin orden aplicado)
     const prop = this.sortProperty();
     const dir = this.sortOrder();
-    result = [...result].sort((a, b) => {
-      const valA = (a as any)[prop] ?? '';
-      const valB = (b as any)[prop] ?? '';
-      if (typeof valA === 'string') {
-        return dir === 'asc' ? valA.localeCompare(valB, 'es') : valB.localeCompare(valA, 'es');
-      }
-      return dir === 'asc' ? valA - valB : valB - valA;
-    });
+
+    if (dir !== 'none') {
+      result = [...result].sort((a, b) => {
+        const rawA = (a as any)[prop];
+        const rawB = (b as any)[prop];
+
+        // Elementos sin valor siempre al final
+        const emptyA = rawA === null || rawA === undefined || rawA === '' || rawA === 0;
+        const emptyB = rawB === null || rawB === undefined || rawB === '' || rawB === 0;
+        if (emptyA && emptyB) return 0;
+        if (emptyA) return 1;
+        if (emptyB) return -1;
+
+        if (typeof rawA === 'string') {
+          return dir === 'asc'
+            ? rawA.localeCompare(rawB, 'es')
+            : rawB.localeCompare(rawA, 'es');
+        }
+        return dir === 'asc' ? rawA - rawB : rawB - rawA;
+      });
+    }
 
     return result;
   });
@@ -224,12 +238,18 @@ export class InventoryComponent implements OnInit {
 
   setSort(property: keyof Product) {
     if (this.sortProperty() === property) {
-      this.sortOrder.set(this.sortOrder() === 'asc' ? 'desc' : 'asc');
+      // Ciclo: none → asc → desc → none
+      const next: Record<string, 'asc' | 'desc' | 'none'> = {
+        none: 'asc',
+        asc: 'desc',
+        desc: 'none',
+      };
+      this.sortOrder.set(next[this.sortOrder()]);
     } else {
       this.sortProperty.set(property);
       this.sortOrder.set('asc');
     }
-    this.currentPage.set(0); // volver a la primera página al cambiar orden
+    this.currentPage.set(0);
   }
 
   // ── Paginación ───────────────────────────────────────────────────────────────
@@ -326,6 +346,17 @@ export class InventoryComponent implements OnInit {
           this.showSnack('❌ Error al eliminar producto', 'error');
         }
       }
+    });
+  }
+
+  openTotalsDialog(): void {
+    const isMob = this.isMobile();
+    this.dialog.open(TotalsDialogComponent, {
+      data: { products: this.allProducts() },
+      width: isMob ? '100vw' : '600px',
+      maxWidth: '100vw',
+      maxHeight: isMob ? '100dvh' : '90vh',
+      panelClass: isMob ? 'fullscreen-dialog' : '',
     });
   }
 
