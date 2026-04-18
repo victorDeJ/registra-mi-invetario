@@ -397,7 +397,7 @@ export class InventoryComponent implements OnInit {
       csvContent += row.join(',') + '\r\n';
     });
 
-    const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+    const blob = new Blob(['\uFEFF' + csvContent], { type: 'text/csv;charset=utf-8;' });
     const url = URL.createObjectURL(blob);
     const link = document.createElement('a');
     link.href = url;
@@ -406,6 +406,52 @@ export class InventoryComponent implements OnInit {
     link.click();
     document.body.removeChild(link);
     this.showSnack('Descarga iniciada', 'success');
+  }
+
+  downloadPriceListCSV(): void {
+    const hasValue = (val: any) => val !== null && val !== undefined && val !== '' && Number(val) > 0;
+    
+    let data = this.allProducts().filter(p => 
+      hasValue(p.costo) || hasValue(p.precio) || hasValue(p.cantidad)
+    );
+
+    if (!data.length) {
+      this.showSnack('No hay productos que cumplan las condiciones', 'error');
+      return;
+    }
+
+    // Ordernar alfabéticamente
+    data = data.sort((a, b) => a.nombre.localeCompare(b.nombre, 'es'));
+
+    // Columnas solicitadas: Nombre del producto, unidades, costo, precio
+    const headers = ['Nombre del producto', 'Unidades', 'Costo', 'Precio'];
+    let csvContent = headers.join(',') + '\r\n';
+
+    data.forEach(p => {
+      const row = [
+        p.nombre,
+        p.cantidad !== undefined && p.cantidad !== null ? p.cantidad : 0,
+        p.costo !== undefined && p.costo !== null ? p.costo : 0,
+        p.precio !== undefined && p.precio !== null ? p.precio : 0
+      ].map(val => {
+        let valStr = String(val);
+        if (valStr.includes(',') || valStr.includes('"') || valStr.includes('\n')) {
+          valStr = '"' + valStr.replace(/"/g, '""') + '"';
+        }
+        return valStr;
+      });
+      csvContent += row.join(',') + '\r\n';
+    });
+
+    const blob = new Blob(['\uFEFF' + csvContent], { type: 'text/csv;charset=utf-8;' });
+    const url = URL.createObjectURL(blob);
+    const link = document.createElement('a');
+    link.href = url;
+    link.setAttribute('download', `lista_precios_${new Date().toISOString().split('T')[0]}.csv`);
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+    this.showSnack('Descarga de precios iniciada', 'success');
   }
 
   async onImportFile(event: any): Promise<void> {

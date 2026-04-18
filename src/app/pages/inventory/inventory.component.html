@@ -105,18 +105,29 @@
         <span style="font-weight: 500; margin-left: 4px">Ordenar</span>
       </button>
 
-      <!-- <button
-        mat-button
-        (click)="downloadCSV()"
-        class="search-toggle-btn desktop-only"
-        matTooltip="Descargar Inventario a CSV"
-        style="padding: 0 16px"
+      <!-- Botón exportar -->
+      <button
+        mat-icon-button
+        [matMenuTriggerFor]="exportMenu"
+        class="search-toggle-btn mobile-only"
+        matTooltip="Exportar"
       >
         <mat-icon>download</mat-icon>
-        <span style="font-weight: 500; margin-left: 4px">Exportar CSV</span>
       </button>
 
       <button
+        mat-button
+        [matMenuTriggerFor]="exportMenu"
+        class="search-toggle-btn desktop-only"
+        matTooltip="Exportar listados"
+        style="padding: 0 16px"
+      >
+        <mat-icon>download</mat-icon>
+        <span style="font-weight: 500; margin-left: 4px">Exportar</span>
+      </button>
+
+      <!-- Botón importar (oculto/comentado pero conservamos estructura original) -->
+      <!-- <button
         mat-button
         (click)="fileInput.click()"
         class="search-toggle-btn desktop-only"
@@ -193,6 +204,29 @@
         @else { arrow_downward }
       </mat-icon>
       <span [style.fontWeight]="sortProperty() === 'costo' && sortOrder() !== 'none' ? '700' : 'normal'">Costo</span>
+    </button>
+  </mat-menu>
+
+  <mat-menu #exportMenu="matMenu" xPosition="before">
+    <div
+      style="
+        padding: 8px 16px;
+        font-weight: 600;
+        color: #666;
+        font-size: 0.8rem;
+        text-transform: uppercase;
+      "
+    >
+      Exportar
+    </div>
+    <mat-divider></mat-divider>
+    <button mat-menu-item (click)="downloadCSV()">
+      <mat-icon>inventory_2</mat-icon>
+      <span>Inventario Completo</span>
+    </button>
+    <button mat-menu-item (click)="downloadPriceListCSV()">
+      <mat-icon>request_quote</mat-icon>
+      <span>Lista de Precios</span>
     </button>
   </mat-menu>
 
